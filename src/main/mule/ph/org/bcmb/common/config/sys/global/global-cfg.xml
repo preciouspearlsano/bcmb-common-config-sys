@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mule xmlns:jms="http://www.mulesoft.org/schema/mule/jms" xmlns:validation="http://www.mulesoft.org/schema/mule/validation"
+	xmlns:secure-properties="http://www.mulesoft.org/schema/mule/secure-properties"
+	xmlns:db="http://www.mulesoft.org/schema/mule/db" xmlns:http="http://www.mulesoft.org/schema/mule/http" xmlns="http://www.mulesoft.org/schema/mule/core" xmlns:doc="http://www.mulesoft.org/schema/mule/documentation" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/http/current/mule-http.xsd
+http://www.mulesoft.org/schema/mule/db http://www.mulesoft.org/schema/mule/db/current/mule-db.xsd
+http://www.mulesoft.org/schema/mule/secure-properties http://www.mulesoft.org/schema/mule/secure-properties/current/mule-secure-properties.xsd
+http://www.mulesoft.org/schema/mule/validation http://www.mulesoft.org/schema/mule/validation/current/mule-validation.xsd
+http://www.mulesoft.org/schema/mule/jms http://www.mulesoft.org/schema/mule/jms/current/mule-jms.xsd">
+	<http:listener-config name="HTTP_Listener_config" doc:name="HTTP Listener config" doc:id="c08e71c3-9012-42f3-931d-72a8eb3c0e94" basePath="/bcmb/common/config/sys" >
+		<http:listener-connection host="0.0.0.0" port="8081" />
+	</http:listener-config>
+	<secure-properties:config name="Secure_Properties_Config" doc:name="Secure Properties Config" doc:id="289c5fa3-b5b0-48bd-ace9-ede0d85bc877" file="db-secure-dev.yaml" key="abcdefghijklmnop" >
+		<secure-properties:encrypt algorithm="Blowfish" />
+	</secure-properties:config>
+	<db:config name="Database_Config" doc:name="Database Config" doc:id="dfe597b0-9596-4cce-8955-4684ec6a6f81" >
+		<db:my-sql-connection host="${secure::db.host}" port="3306" user="${secure::db.user}" password="${secure::db.password}" database="bcmb_dev" />
+	</db:config>
+	<configuration doc:name="Configuration" doc:id="6ce80d12-6cd0-4576-8fb6-815b9825fe78" defaultErrorHandler-ref="global-exmsg-Error_Handler" />
+	<validation:config name="Validation_Config" doc:name="Validation Config" doc:id="73ce6ff8-5cac-434f-a9a0-d4093edbe22f" />
+	<jms:config name="JMS_Config" doc:name="JMS Config" doc:id="fce5ce89-0c3d-4e09-a44f-555df222f4d8" >
+		<jms:active-mq-connection username="admin" password="admin" >
+			<jms:factory-configuration brokerUrl="tcp://COLLABPH1002514:61616" />
+		</jms:active-mq-connection>
+	</jms:config>
+</mule>

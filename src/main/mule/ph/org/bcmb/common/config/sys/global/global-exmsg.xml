@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mule xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core" xmlns="http://www.mulesoft.org/schema/mule/core"
+	xmlns:doc="http://www.mulesoft.org/schema/mule/documentation"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd">
+	<error-handler name="global-exmsg-Error_Handler" doc:id="0dfe859e-a439-4278-8932-97484a036b64" >
+		<on-error-propagate enableNotifications="true" logException="true" doc:name="On Error Propagate" doc:id="64e10551-53f9-42eb-997a-d3bee2cd80c2" type="APP:EXMSG_REQUIRED_COMMAND_PATH">
+			<logger level="INFO" doc:name="Logger" doc:id="4f9500af-1df2-44f2-97a1-a6e42043939d" message="Required command path."/>
+		</on-error-propagate>
+		<on-error-propagate enableNotifications="true" logException="true" doc:name="On Error Propagate" doc:id="5b7ddc56-0eb6-4453-ad64-9fa24fdcca4a" type="APP:EXMSG_REQUIRED_EVENT_TYPE">
+			<logger level="INFO" doc:name="Logger" doc:id="3153fa59-c5a5-44ad-b518-260140fa886b" message="Required event type."/>
+		</on-error-propagate>
+		<on-error-propagate enableNotifications="true" logException="true" doc:name="On Error Propagate" doc:id="c45001a7-a691-4fc2-92cd-a18cdb6424bb" type="APP:EXMSG_REQUIRED_REPLY_PATH">
+			<logger level="INFO" doc:name="Logger" doc:id="07b12ab3-5ead-42dc-8ae7-1093871d6f96" message="Required reply path."/>
+		</on-error-propagate>
+	</error-handler>
+</mule>

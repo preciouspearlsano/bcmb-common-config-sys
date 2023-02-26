@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mule xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core" xmlns:http="http://www.mulesoft.org/schema/mule/http"
+	xmlns="http://www.mulesoft.org/schema/mule/core"
+	xmlns:doc="http://www.mulesoft.org/schema/mule/documentation" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/http/current/mule-http.xsd
+http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd">
+	<flow name="mainflow-event-system-outbox-flow" doc:id="f44b85b9-7ba3-4503-aedb-05453279824c" >
+		<http:listener doc:name="POST:/outbox" doc:id="0095cd95-1285-4c6a-b1c5-8c6b02d2c4bc" config-ref="HTTP_Listener_config" path="/outbox">
+			<http:error-response>
+				<http:body ><![CDATA[#[output application/json --- 
+{
+	success: false,
+	errorMessageEn: error.description
+}]]]></http:body>
+			</http:error-response>
+		</http:listener>
+		<flow-ref doc:name="Flow Reference" doc:id="8c944e17-36b9-484f-8e70-66a9b1c0d728" name="event-system-outbox-impl-flow" targetValue="#[message]"/>
+		<ee:transform doc:name="Transform Message" doc:id="ecd0381d-6a06-4343-9cc1-1f4da9bd368f" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+{
+	success: true,
+	commandId: payload.commandId
+}]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+	</flow>
+</mule>

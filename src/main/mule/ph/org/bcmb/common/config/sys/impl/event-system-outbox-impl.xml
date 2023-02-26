@@ -1,0 +1,67 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mule xmlns:jms="http://www.mulesoft.org/schema/mule/jms" xmlns:validation="http://www.mulesoft.org/schema/mule/validation"
+	xmlns:db="http://www.mulesoft.org/schema/mule/db"
+	xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core" xmlns="http://www.mulesoft.org/schema/mule/core" xmlns:doc="http://www.mulesoft.org/schema/mule/documentation" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd
+http://www.mulesoft.org/schema/mule/db http://www.mulesoft.org/schema/mule/db/current/mule-db.xsd
+http://www.mulesoft.org/schema/mule/validation http://www.mulesoft.org/schema/mule/validation/current/mule-validation.xsd
+http://www.mulesoft.org/schema/mule/jms http://www.mulesoft.org/schema/mule/jms/current/mule-jms.xsd">
+	<flow name="event-system-outbox-impl-flow" doc:id="7f2d0c01-be18-43aa-93e2-fd71fe2a7d36" >
+		<logger level="INFO" doc:name="Logger" doc:id="e5458949-ced1-42a2-98a6-87c0f34b2856" message="#[message]" />
+		<validation:is-not-null doc:name="Is not null" doc:id="1e0edc27-6991-4dc6-b43e-f1ae9163afbc" value="#[attributes.queryParams.eventType]" message="Required event type." config-ref="Validation_Config">
+			<error-mapping sourceType="VALIDATION:NULL" targetType="APP:EXMSG_REQUIRED_EVENT_TYPE" />
+		</validation:is-not-null>
+		<validation:is-not-null doc:name="Is not null" doc:id="e929aadd-4b60-4b54-af9a-3e029822af0b" value="#[attributes.queryParams.commandPath]" message="Required command path." config-ref="Validation_Config">
+			<error-mapping sourceType="VALIDATION:NULL" targetType="APP:EXMSG_REQUIRED_COMMAND_PATH" />
+		</validation:is-not-null>
+		<validation:is-not-null doc:name="Is not null" doc:id="b648eb91-ee90-4796-a8e4-f3f8d9c8166a" message="Required reply path." value="#[attributes.queryParams.replyPath]" config-ref="Validation_Config">
+			<error-mapping sourceType="VALIDATION:NULL" targetType="APP:EXMSG_REQUIRED_REPLY_PATH" />
+		</validation:is-not-null>
+		<ee:transform doc:name="Transform Message" doc:id="b5d24e3a-d181-471c-bcb1-7387889caa20" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+
+import java!java::util::UUID
+
+var outbox = uuid : UUID::randomUUID() as String
+
+var command = uuid : UUID::randomUUID() as String
+
+var currentDateTime = now() as String {format: "yyyy-MM-dd HH:mm:ss.SSSSSS"}
+
+var payloadstring = write(payload, "application/json") as String
+---
+{
+	id : outbox.uuid,
+	eventType : attributes.queryParams.eventType,
+	commandId : command.uuid,
+	commandPath: attributes.queryParams.commandPath,
+	data : payloadstring,
+	replyId : null, 
+	replyPath : attributes.queryParams.replyPath,
+	requestId : payload.email,
+	creationDate: currentDateTime
+} ]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+		<db:insert doc:name="Insert" doc:id="48a4b82f-9afe-43ed-ae05-2f5581a0c1e8" config-ref="Database_Config" target="outbox" targetValue="#[payload.commandId]">
+			<db:sql ><![CDATA[insert into sys_outbox (id,event_type,command_id,command_path,data,reply_id,reply_path,creation_date) values (
+	:id,
+	:eventType,
+	:commandId,
+	:commandPath,
+	:data,
+	:replyId,
+	:replyPath,
+	:creationDate
+) ]]></db:sql>
+			<db:parameter-types />
+			<db:input-parameters ><![CDATA[#[payload]]]></db:input-parameters>
+			<db:auto-generated-keys-column-names />
+		</db:insert>
+		<jms:publish doc:name="Publish" doc:id="ed0780fb-fd4c-4a93-acb4-d5af41805e26" config-ref="JMS_Config" destination="#[attributes.queryParams.commandPath]" persistentDelivery="true"/>
+		<logger level="INFO" doc:name="Logger" doc:id="bac1fe0d-ccde-4f8b-95ca-da1b096aeda2" message="#[payload]"/>
+	</flow>
+</mule>
